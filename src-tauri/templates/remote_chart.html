@@ -1,0 +1,20 @@
+<p class="htmx-indicator">Loading...</p>
+<form hx-post="command:template" hx-target="#templates" hx-swap="innerHTML" hx-indicator="previous .htmx-indicator" hx-disabled-elt="form>input,textarea,select">
+    <div>
+        <select name="repo" id="repo" class="repo">
+            {% for repo in repos %}
+            <option {% if repo==selected_repo %}selected{% endif %}>{{ repo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div hx-post="command:chart_selection" hx-trigger="change from:#repo" hx-include="previous #repo" hx-target="this">
+        {{ charts|safe }}
+    </div>
+
+    <textarea id="values" name="values" placeholder="Enter custom values here" rows=5 cols=50></textarea>
+    <br>
+
+    <input type="submit" value="Load templates" />
+</form>
+<div id="templates">
+</div>

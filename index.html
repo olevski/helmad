@@ -1,0 +1,27 @@
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helmad</title>
+  <script src="/htmx.min.js" defer></script>
+  <script src="/hyperscript.min.js" defer></script>
+  <script type="module" src="/main.js"></script>
+</head>
+
+<body>
+  <div hx-target="div.container">
+    <button hx-post="command:local_chart" id="localChart">
+      Load local chart
+      <img id="spinner" class="htmx-indicator" src="/loading.svg"/>
+    </button>
+    <button hx-post="command:remote_chart" id="remoteChart">
+      Load remote chart
+      <img id="spinner" class="htmx-indicator" src="/loading.svg"/>
+    </button>
+  </div>
+  <input type="file" id="avatar" name="avatar" accept="image/png, image/jpeg" />
+  <div class="container">
+  </div>
+</body>
+
+</html>

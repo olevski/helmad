@@ -1,0 +1,6 @@
+<!-- <select name="chart" id="chart" _="on change from #repo remove me"> -->
+<select name="chart" id="chart">
+  {% for chart in charts %}
+  <option value="{{chart.name}}">{{ chart.name }} - {{ chart.version }}</option>
+  {% endfor %}
+</select>
