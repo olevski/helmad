@@ -1,11 +1,11 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
-default-run = "app"
+name = "helmad"
+version = "0.0.1"
+description = "IDE for developing Kubernetes Helm charts."
+authors = ["Tasko Olevski"]
+license = "Apache-2.0"
+repository = "https://github.com/olevski/helmad"
+default-run = "helmad"
 edition = "2021"
 rust-version = "1.60"
 
