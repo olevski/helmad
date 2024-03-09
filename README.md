@@ -14,7 +14,9 @@ Potential future features:
 - download and use different Helm CLI versions
 - publish installers, executables for different operating systems from CI pipelines
 
-# Instructions
+You can download installers from the Github releases.
+
+# Development Instructions
 
 You have to have Rust (including Cargo) and Node installed.
 
