@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::path::Path;
 use std::process::Command;
 use serde_yaml::{Mapping, Sequence, Value};
 use std::error;
@@ -18,9 +19,9 @@ impl fmt::Display for HelmError {
 
 impl error::Error for HelmError {}
 
-pub fn pull(chart: &str, location: &str) -> Result<(), Box<dyn error::Error>> {
+pub fn pull(chart: &str, location: &Path) -> Result<(), Box<dyn error::Error>> {
     let res = Command::new(HELM)
-        .args(["pull", chart, "--untar", "--destination", location])
+        .args(["pull", chart, "--untar", "--destination", location.to_str().ok_or(HelmError{})?])
         .output()?;
     if !res.status.success() {
         return Err(Box::new(HelmError{}));

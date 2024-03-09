@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "sass": "^1.71.1",
     "vite": "^5.1.4"
   },
   "dependencies": {
+    "@picocss/pico": "^2.0.3",
     "tauri-plugin-fs-watch-api": "github:tauri-apps/tauri-plugin-fs-watch#v1"
   }
 }

@@ -1,0 +1,32 @@
+<form hx-post="command:template" hx-target="#templates" hx-swap="innerHTML"
+  hx-disabled-elt="form>input,textarea,button">
+  <label for="chart">Chart</label>
+  <input type="text" name="chart" value="{{chart}}" readonly />
+  <label for="name">Release name</label>
+  <input type="text" name="name" value="{{name}}" autocorrect="off" />
+  <input type="hidden" name="local" value="{{local}}" />
+  <label for="values">Custom values</label>
+  <textarea id="values" name="values" placeholder="Enter custom values here" rows=5 cols=50
+    value="{{values}}" autocorrect="off" ></textarea>
+  <button type="submit">Render templates</button>
+</form>
+<div class="grid">
+  <div>
+    <h3>Rendered templates</h3>
+    <div id="templates">
+      {% for resource in resources %}
+      {{ resource|safe }}
+      {% endfor %}
+    </div>
+  </div>
+  <div>
+    <h3>Helm templates</h3>
+    {% for template in templates %}
+    {{ template|safe }}
+    {% endfor %}
+  </div>
+</div>
+<div class="grid">
+  <button hx-post="command:home" style="justify-self: center;">Back</button>
+</div>
+

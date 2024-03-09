@@ -1,4 +1,4 @@
-import './style.css';
+import './style.scss';
 import { invoke } from '@tauri-apps/api';
 import { open } from '@tauri-apps/api/dialog';
 import { homeDir } from '@tauri-apps/api/path';
@@ -65,25 +65,31 @@ window.renderLocalChart = async function() {
     return await invoke("local_chart", { path });
 }
 
-const remoteRepoButton = document.querySelector("button#remoteChart");
-if (remoteRepoButton) {
-    remoteRepoButton.addEventListener("click", () => {
-        console.log("stopping watch");
-        window.dispatchEvent(new CustomEvent("helmad:stopFileWatch"))
-    });
-}
+// const remoteRepoButton = document.querySelector("button#remoteChart");
+// if (remoteRepoButton) {
+//     remoteRepoButton.addEventListener("click", () => {
+//         console.log("stopping watch");
+//         window.dispatchEvent(new CustomEvent("helmad:stopFileWatch"))
+//     });
+// }
 
 
-const localChartButton = document.querySelector("button#localChart");
-if (localChartButton) {
-    let path = null;
-    localChartButton.addEventListener("htmx:confirm", async (evt) => {
+let path = null;
+document.body.addEventListener("htmx:confirm", async (evt) => {
+    console.log(evt);
+    if (evt.detail.elt.id == "localChart") {
         evt.preventDefault();
         path = await window.pickLocalChartDir();
         evt.detail.issueRequest();
-    });
-    localChartButton.addEventListener("htmx:configRequest", (evt) => {
-        evt.detail.parameters["path"] = path;
-    });
-}
+    }
+});
+document.body.addEventListener("htmx:configRequest", async (evt) => {
+    if (evt.detail.elt.id == "localChart") {
+        evt.detail.parameters["chart"] = path;
+        evt.detail.parameters["name"] = "helmad";
+        evt.detail.parameters["local"] = true;
+        evt.detail.parameters["values"] = "";
+        evt.detail.parameters["resources"] = await invoke("template", {chart: path, values: "", name: "helmad"});
+    }
+});
 

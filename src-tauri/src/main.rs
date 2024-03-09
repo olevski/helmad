@@ -3,7 +3,13 @@
 
 use askama::Template;
 use serde_yaml::{Mapping, Value};
+use core::time;
+use std::thread::sleep;
+use std::{fs::File, io::Read};
+use std::path::Path;
 use tauri::{Manager, Window};
+use tempfile::TempDir;
+use walkdir::WalkDir;
 mod helm_cli;
 
 #[derive(Template)]
@@ -45,9 +51,29 @@ fn format_templates(input: Vec<Mapping>) -> Vec<K8sResourceTemplate> {
     return templates;
 }
 
+fn format_helm_templates(location: &Path) -> Vec<HelmTemplate> {
+    let template_loc = location.join("templates");
+    let all_files = WalkDir::new(template_loc)
+        .follow_links(true)
+        .into_iter()
+        .map(|entry| entry.unwrap());
+    let helm_templates: Vec<HelmTemplate> = all_files
+        .filter(|entry| {
+            let ftype = entry.file_type();
+            let fname = entry.file_name().to_string_lossy();
+            return ftype.is_file() && (fname.ends_with("yaml") || fname.ends_with("yml"));
+        })
+        .map(|entry| {
+            let mut f = File::open(entry.path()).unwrap();
+            let mut contents: String = String::new(); 
+            f.read_to_string(&mut contents).unwrap();
+            return HelmTemplate{ file_name: entry.file_name().to_str().unwrap().to_owned(), contents};
+        }).collect();
+    return helm_templates;
+}
+
 #[tauri::command]
-async fn template(chart: String, values: String) -> String {
-    let name = "helmad";
+async fn template(chart: String, name: String, values: String) -> String {
     let values_mapping: Mapping = serde_yaml::from_str(&values).unwrap();
     let raw_templates = helm_cli::template(&name, &chart, values_mapping).unwrap();
     let templates = format_templates(raw_templates);
@@ -85,10 +111,25 @@ struct ReposTemplate<'a> {
 }
 
 #[derive(Template)]
-#[template(path = "local_chart.html")]
-struct LocalChartTemplate {
-    path: String,
+#[template(path = "chart.html")]
+struct ChartTemplate {
+    chart: String,
+    name: String,
+    local: bool,
+    values: String,
     resources: Vec<K8sResourceTemplate>,
+    templates: Vec<HelmTemplate>,
+}
+
+#[derive(Template)]
+#[template(path = "home.html")]
+struct HomeTemplate {}
+
+#[derive(Template)]
+#[template(path = "helm_template.html")]
+struct HelmTemplate {
+    file_name: String,
+    contents: String,
 }
 
 #[tauri::command]
@@ -100,40 +141,66 @@ async fn chart_selection(repo: String) -> String {
 }
 
 #[tauri::command]
-async fn remote_chart() -> String {
-    let repos = helm_cli::repo_list().unwrap();
-    let selected_repo = repos[0].clone();
-    let charts = helm_cli::search_repo(&selected_repo, None).unwrap();
-    let charts = ReposTemplate {
-        repos,
-        selected_repo: &selected_repo,
-        charts: ChartsTemplate { charts },
+async fn remote_chart(chart: String, name: String, values: String) -> String {
+    let is_local = false;
+    let tmp_dir = TempDir::new().unwrap();
+    let chart_name = chart.split("/").last().unwrap();
+    helm_cli::pull(&chart, tmp_dir.path()).unwrap();
+    // println!("{:?}", tmp_dir.path());
+    // sleep(time::Duration::new(300, 0));
+    let templates = format_helm_templates(tmp_dir.path().join(chart_name).as_path());
+    let values_mapping: Mapping = serde_yaml::from_str(&values).unwrap();
+    let k8s_resources = helm_cli::template(&name, &chart, values_mapping);
+    let resources = format_templates(k8s_resources.unwrap());
+    let charts = ChartTemplate {
+        chart,
+        resources,
+        templates,
+        name,
+        values,
+        local: is_local,
     };
     return charts.render().unwrap();
 }
 
 #[tauri::command]
-async fn local_chart(path: String) -> String {
-    let k8s_resources = helm_cli::template("helmad", &path, Mapping::new());
+async fn local_chart(chart: String, name: String, values: String, local: String) -> String {
+    let is_local = local == "true";
+    let values_mapping: Mapping = serde_yaml::from_str(&values).unwrap();
+    let k8s_resources = helm_cli::template(&name, &chart, values_mapping);
     let resources = format_templates(k8s_resources.unwrap());
-    let charts = LocalChartTemplate { path, resources };
+    let path = Path::new(&chart);
+    let templates = format_helm_templates(path);
+    let charts = ChartTemplate {
+        chart,
+        resources,
+        templates,
+        name,
+        values,
+        local: is_local,
+    };
     return charts.render().unwrap();
 }
 
 #[tauri::command]
 async fn close_splashscreen(window: Window) {
     // Close splashscreen
-    window
-        .get_window("splashscreen")
-        .expect("no window labeled 'splashscreen' found")
-        .close()
-        .unwrap();
+    let splash = window.get_window("splashscreen");
+    if splash.is_some() {
+        splash.unwrap().close().unwrap();
+    }
     // Show main window
     window
         .get_window("main")
         .expect("no window labeled 'main' found")
         .show()
         .unwrap();
+}
+
+#[tauri::command]
+async fn home() -> String {
+    let home = HomeTemplate {};
+    return home.render().unwrap();
 }
 
 fn main() {
@@ -145,6 +212,7 @@ fn main() {
             remote_chart,
             local_chart,
             close_splashscreen,
+            home,
         ])
         .plugin(tauri_plugin_fs_watch::init())
         .run(tauri::generate_context!())

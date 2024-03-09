@@ -1,0 +1,25 @@
+<div class="grid" style="grid-template-columns: 1fr 7em 1fr; min-height: 450px;">
+  <div style="justify-self: center; align-self: center;">
+    <button hx-post="command:local_chart" id="localChart">Load local chart</button>
+  </div>
+  <div
+    style="height: 100%; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(7, 1fr); grid-column-gap: 0px; grid-row-gap: 0px; "
+    class="grid">
+    <div style="margin:1em 0 2em 0; border-right: 0.25em solid; grid-area: 1 / 1 / 4 / 2;"></div>
+    <div style="margin:1em 0 2em 0; border-left: 0.25em solid; grid-area: 1 / 2 / 4 / 3;"></div>
+    <h1 style="margin: 0; justify-self: center; align-self: center; grid-area: 4 / 1 / 5 / 3">OR</h1>
+    <div style="margin:2em 0 1em 0; border-right: 0.25em solid; grid-area: 5 / 1 / 8 / 2;"></div>
+    <div style="margin: 2em 0 1em 0; border-left: 0.25em solid; grid-area: 5 / 2 / 8 / 3;"></div>
+  </div>
+  <div style="justify-self: center; align-self: center;">
+    <form id="remoteChart" hx-post="command:remote_chart">
+      <input type="text" id="chart" name="chart" autocorrect="off" value="bitnami/postgresql" />
+      <input type="hidden" name="name" value="helmad" />
+      <input type="hidden" name="values" value="" />
+      <small>Specify a chart version by appending it with a ':'</small>
+      <div style="display: flex; justify-content: center;">
+        <button type="submit" style="width: auto;">Load remote chart</button>
+      </div>
+    </form>
+  </div>
+</div>
