@@ -32,11 +32,11 @@
       },
       "externalBin": [],
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
+        "icons/AppIcon-40@3x.png",
+        "icons/AppIcon.icns",
+        "icons/favicon.ico",
+        "icons/icon-192.png",
+        "icons/icon-512.png"
       ],
       "identifier": "helmad.dev",
       "longDescription": "",
@@ -62,6 +62,7 @@
     "updater": {
       "active": false
     },
+    "macOSPrivateApi": true,
     "windows": [
       {
         "fullscreen": false,
@@ -73,11 +74,12 @@
         "label": "main"
       },
       {
-        "width": 400,
-        "height": 200,
+        "width": 192,
+        "height": 192,
         "decorations": false,
         "url": "splashscreen.html",
-        "label": "splashscreen"
+        "label": "splashscreen",
+        "transparent": true
       }
     ]
   }
